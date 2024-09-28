@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package manager;
+
+import "error.proto";
+
+import "manager/common.proto";
+
+message GetWalletsIntiateRequest {
+}
+
+message GetWalletsResultResponse {
+  repeated WalletItem wallet_list = 1;
+}
+
+message GetWalletsRequest {
+  oneof request {
+    GetWalletsIntiateRequest initiate = 1;
+  }
+}
+
+message GetWalletsResponse {
+  oneof response {
+    GetWalletsResultResponse result = 1;
+
+    error.CommonError common_error = 2;
+  }
+}

@@ -1,0 +1,2 @@
+# Options for file common/cypherock-common/proto/manager/get_wallets.proto
+manager.GetWalletsResultResponse.wallet_list type:FT_STATIC max_count:4 fixed_length:true

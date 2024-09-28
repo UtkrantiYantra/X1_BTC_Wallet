@@ -1,0 +1,38 @@
+name: Containerised Firmware Build
+
+on:
+  workflow_call:
+    inputs:
+      firmware:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: cypherock/x1-firmware-builder:v0.0.0
+    steps:
+    - name: Build Firmware (${{ inputs.firmware }} - ${{ inputs.target }})
+      run: |
+        if [[ "${{ github.ref_type }}" == "tag" ]]; then
+          export VERSION_TAG=$(echo "${{ github.ref }}" | cut -f 3- -d '/')
+        elif [[ "${{ github.ref_type }}" == "branch" ]]; then
+          export VERSION_TAG=$(echo "${{ github.ref }}" | cut -f 3- -d '/')
+        else
+          # reftype is repository; use default branch
+          export VERSION_TAG=main
+        fi
+        git clone --branch ${VERSION_TAG} --depth 1 https://github.com/${{ github.repository }}.git --recurse-submodules
+        mkdir build && cd x1_wallet_firmware && mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE="${{ inputs.target }}" -DFIRMWARE_TYPE="${{ inputs.firmware }}" -DCMAKE_BUILD_PLATFORM="Device" -G "Ninja" ..
+        ninja && cd ../..
+        cp x1_wallet_firmware/build/Cypherock-*.* ./build/
+    - name: Archive Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.firmware }}-${{ inputs.target }}-outputs
+        path: build
